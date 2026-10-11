@@ -1,0 +1,153 @@
+integration/ci/compatibility.yml
+  s_7011714e525495::t_858617d21568ba 1-60,62-69
+  s_7011714e525495::t_115f823368adbf 61
+rpc-common-protocol/src/main/java/spring/service/SpringProviderBean.java
+  s_7011714e525495::t_d7fc1de8acde8f 21,23
+rpc-service-consumer/src/main/resources/application.properties
+  s_7011714e525495::t_8ec9efbb9ea449 1,5
+rpc-common-protocol/src/test/java/integration/RpcLoopbackIntegrationTest.java
+  s_7011714e525495::t_6549213995e637 166-167,175-176
+  s_7011714e525495::t_29af6b3ecf5cd9 24,26-29,117,138-160,203-238
+  s_7011714e525495::t_334865418f0ea8 1-23,25,30-78,80-116,118-137,161-165,168-174,177-186,195-202,239-269
+  s_7011714e525495::t_9a5b554c31c8f2 79,187-194
+rpc-common-protocol/src/main/java/spring/reference/SpringReferencePostProcessor.java
+  s_7011714e525495::t_3799488e16dc24 4,29,31,33,85
+integration/maven-settings.xml
+  s_7011714e525495::t_115f823368adbf 1,3,6
+  s_7011714e525495::t_ff750676993156 2,4-5
+rpc-common-protocol/src/main/java/protocol/RequestHolder.java
+  s_7011714e525495::t_4dc94fc80518de 8,10-23,29-44,46-47
+  s_7011714e525495::t_b9cf169a2a11c5 45
+  s_7011714e525495::t_67906a9650345e 24-28
+rpc-common-protocol/src/test/java/codec/ProtocolDecoderTest.java
+  s_7011714e525495::t_8659a4291586a9 16-22,28,72-87,89-101,109-112,115,121-138
+  s_7011714e525495::t_9687b9c66a863b 88,103
+  s_7011714e525495::t_b065efbd94e0d4 1-15,23-27,29-71,102,104-108,113-114,116-120,139-140
+rpc-common-registry/pom.xml
+  s_7011714e525495::t_ed6c02f9aa1ce8 40
+rpc-common-protocol/src/main/java/handler/RpcClientInitializer.java
+  s_7011714e525495::t_4dc94fc80518de 19
+rpc-common-protocol/src/main/java/codec/ProtocolDecoder.java
+  s_7011714e525495::t_8c0fcb8df256a0 5,51-53
+  s_7011714e525495::t_4dc94fc80518de 9-10,31-32,57-63,77-79,99
+rpc-common-protocol/src/main/java/spring/service/Mediator.java
+  s_7011714e525495::t_ed6c02f9aa1ce8 34,41,43-44
+.gitignore
+  s_7011714e525495::t_8ec9efbb9ea449 1,5-7
+  s_7011714e525495::t_5db14722288275 4
+rpc-common-registry/src/main/java/serviceregistry/RegistryFactory.java
+  s_7011714e525495::t_1f49b2c84a9b0d 8-10,14,16,18,21
+rpc-common-protocol/src/main/java/spring/service/ProtocolServerProperties.java
+  s_7011714e525495::t_d7fc1de8acde8f 12-13
+rpc-common-protocol/src/main/java/serialization/SerializationManager.java
+  s_7011714e525495::t_4dc94fc80518de 17
+integration/contracts/v0/rulespec.schema.json
+  s_7011714e525495::t_115f823368adbf 1-42
+rpc-common-protocol/src/main/java/handler/RpcServerHandler.java
+  s_7011714e525495::t_48b1613b7c0bdc 34
+rpc-common-protocol/src/main/java/handler/RpcServerInitializer.java
+  s_7011714e525495::t_4dc94fc80518de 14
+integration/capability-matrix.json
+  s_7011714e525495::t_365513f5f8b54c 1-35
+integration/contracts/v0/rulespec.fixture.json
+  s_7011714e525495::t_115f823368adbf 1-23
+rpc-common-protocol/src/main/java/handler/RpcClientHandler.java
+  s_7011714e525495::t_4dc94fc80518de 18-27
+rpc-common-protocol/src/test/java/serialization/JsonSerializerTest.java
+  s_7011714e525495::t_8659a4291586a9 3-5,7,9,11-15,17
+rpc-common-protocol/src/main/java/spring/reference/ProtocolInvokerProxy.java
+  s_7011714e525495::t_3799488e16dc24 8,15-17,23-24,27,37,47,57-61,64-66,68-78
+  s_7011714e525495::t_b9cf169a2a11c5 21,25,28,31-35,38,63
+  s_7011714e525495::t_48b1613b7c0bdc 62
+  s_7011714e525495::t_14315da9941244 36
+  s_7011714e525495::t_2c16a5e18d4783 39
+rpc-common-protocol/src/main/java/spring/reference/SpringReferenceBean.java
+  s_7011714e525495::t_3799488e16dc24 6,18,30,49-51
+  s_7011714e525495::t_b333d28e6b94dd 52
+integration/repositories.json
+  s_7011714e525495::t_365513f5f8b54c 1-32
+  s_7011714e525495::t_7ae3d05a820d78 33-35
+integration/tests/test_compatibility.py
+  s_7011714e525495::t_8a55b296c3569d 35,37-41
+  s_7011714e525495::t_115f823368adbf 19,28,36,50-54
+  s_7011714e525495::t_3b26112509b07c 109-113
+  s_7011714e525495::t_a80fb47f5329bd 1-11,13-18,20-27,29-34,42-49,60-108,114-125
+  s_7011714e525495::t_dea557095a5c85 12,55-59
+rpc-common-protocol/src/test/java/protocol/RequestHolderTest.java
+  s_7011714e525495::t_67906a9650345e 1-88
+.github/workflows/ci.yml
+  s_7011714e525495::t_8ec9efbb9ea449 1-21
+rpc-common-protocol/src/main/java/entry/NettyClient.java
+  s_7011714e525495::t_b9cf169a2a11c5 41-44
+  s_7011714e525495::t_4dc94fc80518de 7-8,16-21,24-25,27,33,37-39,45-51,53-72,74-78
+  s_7011714e525495::t_c2e7deb5dee23b 40
+integration/compatibility.py
+  s_7011714e525495::t_365513f5f8b54c 1-71,74-177,184-197,199-207,211-217,219-233,235-239,256-257,259-260,263-265,271-273,275-286,289-293,295,303-317,319-323,326-344
+  s_7011714e525495::t_6e1ab42d399ba1 72-73,288
+  s_7011714e525495::t_8a55b296c3569d 198,208-210,218,234,262
+  s_7011714e525495::t_115f823368adbf 240-255,258,294,318,324-325
+  s_7011714e525495::t_dea557095a5c85 261
+  s_7011714e525495::t_71dcd886ee306f 296-302
+  s_7011714e525495::t_858617d21568ba 178-183,266-270,274,287
+rpc-service-provider/src/main/resources/application.properties
+  s_7011714e525495::t_8ec9efbb9ea449 4
+  s_7011714e525495::t_d7fc1de8acde8f 2
+integration/README.md
+  s_7011714e525495::t_115f823368adbf 7-8,22,38
+  s_7011714e525495::t_5db14722288275 11
+  s_7011714e525495::t_858617d21568ba 1-6,9-10,12-21,23-37,39-42
+rpc-common-registry/src/main/java/zookeeper/ZookeeperRegistryService.java
+  s_7011714e525495::t_b9cf169a2a11c5 19,25,30,72,78-82
+  s_7011714e525495::t_05dc6f31fbf010 83
+README.md
+  s_7011714e525495::t_9033eb0a57af7a 1-2,24,56,89
+  s_7011714e525495::t_8ec9efbb9ea449 3-23,25-38,42-46,50-55,57-62,65,73,85-88,90-95
+  s_7011714e525495::t_ed6c02f9aa1ce8 49
+  s_7011714e525495::t_858617d21568ba 74-84
+  s_7011714e525495::t_d7fc1de8acde8f 39-41,47,63-64,66-72
+  s_7011714e525495::t_be3263a3e27b17 48
+rpc-common-protocol/pom.xml
+  s_7011714e525495::t_48b1613b7c0bdc 50-55
+  s_7011714e525495::t_b065efbd94e0d4 44-49,58
+rpc-common-protocol/src/main/java/serialization/JsonSerializer.java
+  s_7011714e525495::t_8c0fcb8df256a0 4,7-8,10-18,21,26
+rpc-common-protocol/src/main/java/spring/service/ProviderAutoConfiguration.java
+  s_7011714e525495::t_d7fc1de8acde8f 20-23
+rpc-common-protocol/src/main/java/spring/reference/ReferenceAutoConfiguration.java
+  s_7011714e525495::t_3799488e16dc24 3,13-16,18,23
+  s_7011714e525495::t_ed6c02f9aa1ce8 12
+.github/ISSUE_TEMPLATE/bug.yml
+  s_7011714e525495::t_a3588980e5a5a7 1-45
+.github/ISSUE_TEMPLATE/config.yml
+  s_7011714e525495::t_3a45478540a78c 1-5
+.github/ISSUE_TEMPLATE/documentation.yml
+  s_7011714e525495::t_02d0530a1f29f9 1-23
+.github/ISSUE_TEMPLATE/feature.yml
+  s_7011714e525495::t_3b85ba3c29402a 1-29
+.github/pull_request_template.md
+  s_7011714e525495::t_a31b728dc5e6c0 1-24
+.github/workflows/compatibility.yml
+  s_7011714e525495::t_9031ccf7439008 1-69
+CONTRIBUTING.md
+  s_7011714e525495::t_9f85b4134709c6 1-23
+SECURITY.md
+  s_7011714e525495::t_c91eda9e97aa13 1-13
+assets/hero.svg
+  s_7011714e525495::t_30f6b654a13acc 1-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "7ab83cffe05d412e6568f0c1f28eaee84c62307d",
+  "prompts": {},
+  "sessions": {
+    "s_7011714e525495": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a12529-718f-7053-849a-2fa10f2720ee",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "恺撒 <weihaodong@xiaohongshu.com>"
+    }
+  }
+}
