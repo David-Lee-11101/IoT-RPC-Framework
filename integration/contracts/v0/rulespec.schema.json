@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:smart-rule:rulespec:v0",
+  "title": "SmartRule RuleSpec v0 fixture",
+  "description": "An ordered array of immutable automation rules used by the offline compatibility harness.",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["id", "description", "triggers", "conditions", "actions"],
+    "properties": {
+      "id": {"type": "string", "minLength": 1},
+      "description": {"type": "string", "minLength": 1},
+      "triggers": {
+        "type": "array",
+        "minItems": 1,
+        "items": {"$ref": "#/$defs/deviceState"}
+      },
+      "conditions": {
+        "type": "array",
+        "items": {"$ref": "#/$defs/deviceState"}
+      },
+      "actions": {
+        "type": "array",
+        "minItems": 1,
+        "items": {"$ref": "#/$defs/deviceState"}
+      }
+    }
+  },
+  "$defs": {
+    "deviceState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["device", "state"],
+      "properties": {
+        "device": {"type": "string", "minLength": 1},
+        "state": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

@@ -14,20 +14,20 @@ import serviceregistry.IRegistryService;
 import serviceregistry.ServiceInfo;
 
 import java.util.Collection;
-import java.util.List;
 
 @Slf4j
-public class ZookeeperRegistryService implements IRegistryService {
+public class ZookeeperRegistryService implements IRegistryService, AutoCloseable {
 
     private static final String REGISTRY_PATH="/registry";
     //Curator中提供的服务注册与发现的组件封装，它对此抽象出了ServiceInstance、
     // ServiceProvider、ServiceDiscovery三个接口，通过它我们可以很轻易的实现Service Discovery
     private final ServiceDiscovery<ServiceInfo> serviceDiscovery;
+    private final CuratorFramework client;
 
     private ILoadBalance<ServiceInstance<ServiceInfo>> loadBalance;
 
     public ZookeeperRegistryService(String registryAddress) throws Exception {
-        CuratorFramework client= CuratorFrameworkFactory
+        client= CuratorFrameworkFactory
                 .newClient(registryAddress,new ExponentialBackoffRetry(1000,3));
         client.start();
         JsonInstanceSerializer<ServiceInfo> serializer=new JsonInstanceSerializer<>(ServiceInfo.class);
@@ -69,10 +69,16 @@ public class ZookeeperRegistryService implements IRegistryService {
         Collection<ServiceInstance<ServiceInfo>> serviceInstances= serviceDiscovery
                 .queryForInstances(serviceName);
         //通过负载均衡返回某个具体实例
-        ServiceInstance<ServiceInfo> serviceInstance=loadBalance.select((List<ServiceInstance<ServiceInfo>>)serviceInstances);
+        ServiceInstance<ServiceInfo> serviceInstance=loadBalance.select(new java.util.ArrayList<>(serviceInstances));
         if(serviceInstance!=null){
             return serviceInstance.getPayload();
         }
         return null;
+    }
+
+    @Override
+    public void close() throws Exception {
+        serviceDiscovery.close();
+        client.close();
     }
 }

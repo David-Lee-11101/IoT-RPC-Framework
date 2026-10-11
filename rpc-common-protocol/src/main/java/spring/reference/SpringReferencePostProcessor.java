@@ -1,6 +1,7 @@
 package spring.reference;
 
 import constants.MessageConstant;
+import entry.NettyClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -25,9 +26,11 @@ public class SpringReferencePostProcessor implements ApplicationContextAware, Be
     private ApplicationContext context;
     private ClassLoader classLoader;
     private ProtocolClientProperties clientProperties;
+    private final NettyClient nettyClient;
 
-    public SpringReferencePostProcessor(ProtocolClientProperties clientProperties) {
+    public SpringReferencePostProcessor(ProtocolClientProperties clientProperties, NettyClient nettyClient) {
         this.clientProperties = clientProperties;
+        this.nettyClient = nettyClient;
     }
 
     //保存发布的引用bean信息
@@ -79,6 +82,7 @@ public class SpringReferencePostProcessor implements ApplicationContextAware, Be
             log.info("Spring 测试：interfaceClass为 {}",field.getType());
             builder.addPropertyValue("registryType",clientProperties.getRegistryType());
             builder.addPropertyValue("registryAddress",clientProperties.getRegistryAddress());
+            builder.addPropertyValue("nettyClient", nettyClient);
             BeanDefinition beanDefinition=builder.getBeanDefinition();
             rpcRefBeanDefinitions.put(field.getName(),beanDefinition);
             log.info("Spring 对 Client请求方法的Bean对象生成成功");

@@ -5,22 +5,20 @@ import zookeeper.ZookeeperRegistryService;
 public class RegistryFactory {
 
     public static IRegistryService createRegistryService(String address,RegistryType registryType){
-        IRegistryService registryService=null;
+        if (registryType == null) {
+            throw new IllegalArgumentException("Registry type is required");
+        }
         try {
             switch (registryType) {
                 case ZOOKEEPER:
-                    registryService = new ZookeeperRegistryService(address);
-                    break;
+                    return new ZookeeperRegistryService(address);
                 case EUREKA:
-                    //TODO
-                    break;
+                    throw new UnsupportedOperationException("Eureka registry is not implemented");
                 default:
-                    registryService = new ZookeeperRegistryService(address);
-                    break;
+                    throw new IllegalArgumentException("Unsupported registry type: " + registryType);
             }
         }catch (Exception e){
-            e.printStackTrace();
+            throw new IllegalStateException("Unable to initialize " + registryType + " registry", e);
         }
-        return registryService;
     }
 }

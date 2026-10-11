@@ -1,0 +1,23 @@
+[
+  {
+    "id": "cool-office",
+    "description": "Cool an occupied office when its temperature is high.",
+    "triggers": [{"device": "office-temperature", "state": "above-30-celsius"}],
+    "conditions": [{"device": "office-occupancy", "state": "occupied"}],
+    "actions": [{"device": "office-hvac", "state": "cooling-enabled"}]
+  },
+  {
+    "id": "warm-office",
+    "description": "Warm an occupied office when its temperature is low.",
+    "triggers": [{"device": "office-temperature", "state": "below-18-celsius"}],
+    "conditions": [{"device": "office-occupancy", "state": "occupied"}],
+    "actions": [{"device": "office-hvac", "state": "heating-enabled"}]
+  },
+  {
+    "id": "notify-cooling",
+    "description": "Notify the facility channel after cooling starts.",
+    "triggers": [{"device": "office-hvac", "state": "cooling-enabled"}],
+    "conditions": [],
+    "actions": [{"device": "facility-notification", "state": "sent"}]
+  }
+]

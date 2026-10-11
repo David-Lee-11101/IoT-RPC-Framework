@@ -10,9 +10,6 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import spring.annotation.RemoteServiceReference;
 
 import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
 
 @Slf4j
 public class SpringProviderBean implements InitializingBean, BeanPostProcessor {
@@ -21,10 +18,9 @@ public class SpringProviderBean implements InitializingBean, BeanPostProcessor {
     private final String serverAddress;
     private final IRegistryService registryService; //修改部分,增加注册中心实现
 
-    public SpringProviderBean(int serverPort, IRegistryService registryService) throws UnknownHostException {
+    public SpringProviderBean(String serverAddress, int serverPort, IRegistryService registryService) {
         this.serverPort = serverPort;
-        InetAddress address = InetAddress.getLocalHost();
-        this.serverAddress = address.getHostAddress();
+        this.serverAddress = serverAddress;
         this.registryService = registryService; //修改部分,增加注册中心实现
     }
 
@@ -37,7 +33,6 @@ public class SpringProviderBean implements InitializingBean, BeanPostProcessor {
                 new NettyServer(this.serverAddress, this.serverPort).startNettyServer();
             } catch (Exception e) {
                 log.error("启动Netty Server出错,", e);
-                e.printStackTrace();
             }
         }).start();
     }

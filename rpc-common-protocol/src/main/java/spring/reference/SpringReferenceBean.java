@@ -3,6 +3,7 @@ package spring.reference;
 import serviceregistry.IRegistryService;
 import serviceregistry.RegistryFactory;
 import serviceregistry.RegistryType;
+import entry.NettyClient;
 import org.springframework.beans.factory.FactoryBean;
 
 import java.lang.reflect.Proxy;
@@ -14,6 +15,7 @@ public class SpringReferenceBean implements FactoryBean<Object> {
 
     private byte registryType;
     private String registryAddress;
+    private NettyClient nettyClient;
 
     @Override
     public Object getObject() throws Exception {
@@ -25,7 +27,7 @@ public class SpringReferenceBean implements FactoryBean<Object> {
         IRegistryService registryService= RegistryFactory.createRegistryService(this.registryAddress, RegistryType.findByCode(this.registryType));
         this.object= Proxy.newProxyInstance(this.interfaceClass.getClassLoader(),
                 new Class<?>[]{this.interfaceClass},
-                new ProtocolInvokerProxy(registryService));
+                new ProtocolInvokerProxy(registryService, nettyClient));
     }
 
     @Override
@@ -43,5 +45,9 @@ public class SpringReferenceBean implements FactoryBean<Object> {
 
     public void setRegistryAddress(String registryAddress) {
         this.registryAddress = registryAddress;
+    }
+
+    public void setNettyClient(NettyClient nettyClient) {
+        this.nettyClient = nettyClient;
     }
 }

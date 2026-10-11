@@ -4,7 +4,6 @@ import protocol.ProtocolRequest;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,18 +31,17 @@ public class Mediator {
         String key=rpcRequest.getClassName()+"."+rpcRequest.getMethodName();
         BeanMethod beanMethod=beanMethodMap.get(key);
         if(beanMethod==null){
-            return null;
+            throw new IllegalArgumentException("No service method registered for " + key);
         }
         Object bean=beanMethod.getBean();
         Method method=beanMethod.getMethod();
         try {
-            System.out.println(Arrays.toString(rpcRequest.getParams()));
             return method.invoke(bean,rpcRequest.getParams());
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Cannot access service method " + key, e);
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            Throwable target = e.getTargetException();
+            throw new IllegalStateException("Service method failed: " + key, target);
         }
-        return null;
     }
 }

@@ -29,27 +29,9 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<ProtocolConstr
         //在最后一个handler将返回的消息发送回去，开始掉头出栈
         ctx.writeAndFlush(resProtocol);
     }
-
-//    @Deprecated
-//    private Object invoke(ProtocolRequest request){
-//        try {
-//            Class<?> clazz=Class.forName(request.getClassName());
-//            Object bean= SpringBeansManager.getBean(clazz); //获取实例对象
-//            Method declaredMethod=clazz.getDeclaredMethod(request.getMethodName(),request.getParameterTypes());
-//            return declaredMethod.invoke(bean,request.getParams());
-//        } catch (ClassNotFoundException | NoSuchMethodException e) {
-//            e.printStackTrace();
-//        } catch (IllegalAccessException e) {
-//            e.printStackTrace();
-//        } catch (InvocationTargetException e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
-
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        super.exceptionCaught(ctx, cause);
+        ctx.close();
     }
 }
 

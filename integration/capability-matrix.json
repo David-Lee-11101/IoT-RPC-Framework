@@ -1,0 +1,35 @@
+{
+  "schema": "rulespec-capability-matrix/v0",
+  "generalInteroperabilityClaimed": false,
+  "capabilities": [
+    {
+      "id": "scheduler",
+      "input": "RuleSpec v0 array",
+      "semantics": "deterministic-in-process-scheduling-simulation",
+      "conditionsEvaluated": false,
+      "generalInteroperabilityClaimed": false
+    },
+    {
+      "id": "analyzer",
+      "input": "RuleSpec v0 array",
+      "semantics": "ordered-write-conflict-and-dependency-analysis",
+      "conditionsEvaluated": false,
+      "generalInteroperabilityClaimed": false
+    },
+    {
+      "id": "composer",
+      "input": "one RuleSpec v0 object per invocation",
+      "semantics": "offline-validation-and-schema-marking",
+      "cardinality": {"triggers": "1", "conditions": "0..1", "actions": "1"},
+      "generalInteroperabilityClaimed": false
+    },
+    {
+      "id": "rpc",
+      "input": "String method argument",
+      "semantics": "loopback-request-response-correlation",
+      "transport": "opaque-canonical-json-string",
+      "schemaAware": false,
+      "generalInteroperabilityClaimed": false
+    }
+  ]
+}
