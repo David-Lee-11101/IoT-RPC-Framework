@@ -203,9 +203,9 @@ def run_suite(args: argparse.Namespace) -> Dict[str, Any]:
 
     executions = []
     scheduler_run = _run(
-        "scheduler", maven + ["-q", "exec:java", "-Dexec.mainClass=concurrency.demo.SmartRuleSimulationDemo",
+        "scheduler", maven + ["-q", "compile", "exec:java", "-Dexec.mainClass=concurrency.demo.SmartRuleSimulationDemo",
                                "-Dexec.args=" + str(fixture_path)], scheduler, args.timeout, environment,
-        display_argv=maven_display + ["-q", "exec:java",
+        display_argv=maven_display + ["-q", "compile", "exec:java",
                                       "-Dexec.mainClass=concurrency.demo.SmartRuleSimulationDemo",
                                       "-Dexec.args=<fixture>"],
     )
