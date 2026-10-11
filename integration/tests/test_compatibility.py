@@ -98,15 +98,20 @@ class CompatibilityContractTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "exactly one action"):
             normalize_composer(invalid, rule)
 
-    def test_manifest_uses_pending_concrete_sibling_commits_and_non_circular_anchor(self):
+    def test_manifest_supports_pending_and_finalized_pins_without_self_pin(self):
         validate_manifest(self.manifest)
         self.assertEqual("invocation", self.manifest["anchor"]["commitMode"])
         self.assertNotIn("commit", self.manifest["anchor"])
         for repository in self.manifest["siblings"]:
-            self.assertTrue(repository["publicationPending"])
+            self.assertFalse(repository["publicationPending"])
             self.assertTrue(re.fullmatch(r"[0-9a-f]{40}", repository["commit"]))
 
-        finalized = json.loads(json.dumps(self.manifest))
+        pending = json.loads(json.dumps(self.manifest))
+        for repository in pending["siblings"]:
+            repository["publicationPending"] = True
+        validate_manifest(pending)
+
+        finalized = json.loads(json.dumps(pending))
         for repository in finalized["siblings"]:
             repository["publicationPending"] = False
         validate_manifest(finalized)

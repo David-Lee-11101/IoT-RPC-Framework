@@ -36,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -188,10 +189,14 @@ public class RpcLoopbackIntegrationTest {
 
     private void awaitProviderRegistration() throws Exception {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(3);
-        while (registry.discovery(EchoService.class.getName()) == null && System.nanoTime() < deadline) {
-            Thread.sleep(20);
+        ServiceInfo registeredProvider = null;
+        while (registeredProvider == null && System.nanoTime() < deadline) {
+            registeredProvider = registry.discovery(EchoService.class.getName());
+            if (registeredProvider == null) {
+                Thread.sleep(20);
+            }
         }
-        assertTrue("Provider registration was not visible", registry.discovery(EchoService.class.getName()) != null);
+        assertNotNull("Provider registration was not visible", registeredProvider);
     }
 
     private Throwable rootCause(Throwable failure) {

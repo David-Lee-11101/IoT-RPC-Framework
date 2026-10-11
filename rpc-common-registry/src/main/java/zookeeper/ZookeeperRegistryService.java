@@ -14,11 +14,13 @@ import serviceregistry.IRegistryService;
 import serviceregistry.ServiceInfo;
 
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class ZookeeperRegistryService implements IRegistryService, AutoCloseable {
 
     private static final String REGISTRY_PATH="/registry";
+    private static final int CONNECTION_TIMEOUT_SECONDS = 5;
     //Curator中提供的服务注册与发现的组件封装，它对此抽象出了ServiceInstance、
     // ServiceProvider、ServiceDiscovery三个接口，通过它我们可以很轻易的实现Service Discovery
     private final ServiceDiscovery<ServiceInfo> serviceDiscovery;
@@ -30,6 +32,16 @@ public class ZookeeperRegistryService implements IRegistryService, AutoCloseable
         client= CuratorFrameworkFactory
                 .newClient(registryAddress,new ExponentialBackoffRetry(1000,3));
         client.start();
+        try {
+            if (!client.blockUntilConnected(CONNECTION_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                client.close();
+                throw new IllegalStateException("Timed out connecting to the ZooKeeper registry");
+            }
+        } catch (InterruptedException interrupted) {
+            client.close();
+            Thread.currentThread().interrupt();
+            throw interrupted;
+        }
         JsonInstanceSerializer<ServiceInfo> serializer=new JsonInstanceSerializer<>(ServiceInfo.class);
         //random负载均衡的选择一台zookeeper服务器连接
         this.serviceDiscovery= ServiceDiscoveryBuilder.builder(ServiceInfo.class)
