@@ -1,0 +1,69 @@
+name: RuleSpec compatibility
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "integration/**"
+
+jobs:
+  offline-compatibility:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out anchor
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "8"
+          cache: maven
+
+      - name: Reject pending publication pins
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifest = json.loads(Path("integration/repositories.json").read_text())
+          pending = [item["id"] for item in manifest["siblings"] if item["publicationPending"]]
+          if pending:
+              raise SystemExit("Finalize published commits before enabling CI: " + ", ".join(pending))
+          PY
+
+      - name: Clone exact sibling commits
+        env:
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+
+          manifest = json.loads(Path("integration/repositories.json").read_text())
+          parent = Path.cwd().parent
+          for item in manifest["siblings"]:
+              target = parent / item["directory"]
+              target.mkdir()
+              subprocess.run(["git", "init", str(target)], check=True)
+              subprocess.run(["git", "-C", str(target), "remote", "add", "origin",
+                              "https://github.com/{}/{}.git".format(os.environ["OWNER"], item["repository"])], check=True)
+              subprocess.run(["git", "-C", str(target), "fetch", "--depth=1", "origin", item["commit"]], check=True)
+              subprocess.run(["git", "-C", str(target), "checkout", "--detach", "FETCH_HEAD"], check=True)
+          PY
+
+      - name: Run contract tests and source compatibility suite
+        run: |
+          python3 -m unittest discover -s integration/tests -v
+          python3 integration/compatibility.py \
+            --maven-settings integration/maven-settings.xml \
+            --java-home "$JAVA_HOME" \
+            --proof integration/proof.json
+
+      - name: Upload machine-readable proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: rulespec-compatibility-proof
+          path: integration/proof.json

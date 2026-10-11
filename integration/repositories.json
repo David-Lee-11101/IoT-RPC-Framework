@@ -1,0 +1,35 @@
+{
+  "schema": "rulespec-repository-manifest/v0",
+  "anchor": {
+    "name": "SmartService-Discovery-RPC",
+    "directory": "IoT-RPC-Framework",
+    "commitMode": "invocation",
+    "note": "The proof records the checked-out anchor HEAD at invocation time. The anchor does not pin itself, which avoids a circular commit hash."
+  },
+  "siblings": [
+    {
+      "id": "scheduler",
+      "name": "SmartRule-Concurrency-Scheduler",
+      "repository": "IoT-Event-Proxy",
+      "directory": "IoT-Event-Proxy",
+      "commit": "672e93e26458704825d43df642352ed20e59763a",
+      "publicationPending": false
+    },
+    {
+      "id": "analyzer",
+      "name": "SmartRule-Conflict-Analyzer",
+      "repository": "IoT-Event-Detector",
+      "directory": "IoT-Event-Detector",
+      "commit": "a5164285fcebe31cc544f654493d23121b26d661",
+      "publicationPending": false
+    },
+    {
+      "id": "composer",
+      "name": "SmartRule-Automate-Composer",
+      "repository": "IoT-CRI-Interpreter",
+      "directory": "IoT-CRI-Interpreter",
+      "commit": "20d3a886d16b6cccacef8ef677ee6c84c6bd4646",
+      "publicationPending": false
+    }
+  ]
+}
