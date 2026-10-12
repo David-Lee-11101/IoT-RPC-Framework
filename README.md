@@ -46,6 +46,8 @@ Typed records follow the Hub contract. `select-field` accepts exactly one node-o
 
 JDK 8 and Maven 3.6+ are required. Install Smart Home Communication locally first when testing the TinyRPC adapter.
 
+Current engine artifacts use the neutral `io.smarthome` Maven group. The real transport bridge is `io.smarthome:logic-engine-tiny-rpc-adapter:1.0-SNAPSHOT`; Java packages remain under `io.smarthome.logic.*`.
+
 ```bash
 # In Smart Home Communication
 mvn --batch-mode --no-transfer-progress -DskipTests install
