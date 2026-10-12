@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: David-Lee-11101/Handwritten-Netty-RPC
-          ref: c2347e818c890feb88d9377ad5f7026bc0f65f8b
+          ref: 3d4e04f93a7a477fa9f77dbba756792120be74c1
           path: communication
       - uses: actions/setup-java@v4
         with:
