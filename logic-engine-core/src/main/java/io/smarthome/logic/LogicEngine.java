@@ -13,6 +13,7 @@ public final class LogicEngine {
     private static final double MAX_ABSOLUTE_NUMBER = 1_000_000_000_000D;
     private final LocalServiceCatalog catalog;
     private final Map<String, TransportAdapter> adapters = new HashMap<>();
+    private final java.util.concurrent.atomic.AtomicLong requestSequence = new java.util.concurrent.atomic.AtomicLong();
 
     public LogicEngine(LocalServiceCatalog catalog, List<TransportAdapter> adapters) {
         if (catalog == null || adapters == null) throw new IllegalArgumentException("catalog and adapters are required");
@@ -67,8 +68,11 @@ public final class LogicEngine {
             }
             validateNode(node, byId);
         }
-        for (LogicModel.Output output : definition.getOutputs()) if (!byId.containsKey(output.getNodeId()))
-            throw new LogicFailure("logic.missing-output", output.getNodeId(), "Output references a missing node");
+        java.util.HashSet<String> outputNames = new java.util.HashSet<>();
+        for (LogicModel.Output output : definition.getOutputs()) {
+            if (!outputNames.add(output.getName())) throw new LogicFailure("logic.duplicate-output", output.getNodeId(), "Output names must be unique");
+            if (!byId.containsKey(output.getNodeId())) throw new LogicFailure("logic.missing-output", output.getNodeId(), "Output references a missing node");
+        }
         PriorityQueue<String> ready = new PriorityQueue<>();
         indegree.forEach((id, degree) -> { if (degree == 0) ready.add(id); });
         List<LogicModel.Node> order = new ArrayList<>();
@@ -143,8 +147,11 @@ public final class LogicEngine {
                 long remainingMs = Math.max(1, TimeUnit.NANOSECONDS.toMillis(graphDeadline - System.nanoTime()));
                 long timeoutMs = Math.min(nodeTimeoutMs, remainingMs);
                 try {
-                    TypedValue result = adapter.invoke(service, node.getOperation(), inputs,
-                            System.currentTimeMillis() + timeoutMs, "request-" + node.getNodeId()).get(timeoutMs, TimeUnit.MILLISECONDS);
+                    java.util.concurrent.CompletableFuture<TypedValue> invocation = adapter.invoke(service, node.getOperation(), inputs,
+                            System.currentTimeMillis() + timeoutMs, "request.logic." + requestSequence.incrementAndGet());
+                    TypedValue result;
+                    try { result = invocation.get(timeoutMs, TimeUnit.MILLISECONDS); }
+                    catch (java.util.concurrent.TimeoutException timeout) { invocation.cancel(true); throw timeout; }
                     if (result == null || result.getType() != node.getResult().getType())
                         throw failure("logic.result-type", node, "Runtime value does not match declared outer type");
                     if (result.getType() != TypedValue.Type.RECORD) requireValueMatches(result, node.getResult(), node, "logic.result-type");
@@ -219,7 +226,7 @@ public final class LogicEngine {
     private static void requireComparableInputs(LogicModel.Node node,Map<String,LogicModel.Node>byId){
         LogicModel.TypeSignature left=bindingType(node.getInputs().get(0),byId), right=bindingType(node.getInputs().get(1),byId);
         boolean numericPair=numeric(left.getType())&&numeric(right.getType());
-        boolean equality=("eq".equals(node.getOperator())||"ne".equals(node.getOperator()))&&same(left,right);
+        boolean equality=("eq".equals(node.getOperator())||"ne".equals(node.getOperator()))&&same(left,right)&&left.getType()!=TypedValue.Type.RECORD;
         if(!numericPair&&!equality)throw failure("logic.input-type",node,"Comparison types are incompatible");
     }
     private static boolean numeric(TypedValue.Type type){return type==TypedValue.Type.INTEGER||type==TypedValue.Type.NUMBER;}

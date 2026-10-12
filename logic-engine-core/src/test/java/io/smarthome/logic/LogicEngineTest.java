@@ -105,6 +105,7 @@ public class LogicEngineTest {
         never.future = new CompletableFuture<>();
         expect("logic.node-timeout", () -> engine(never).execute(new LogicModel.Definition("graph.timeout",
                 Collections.singletonList(serviceNode("sensor.read")), Collections.emptyList(), 100, 10)));
+        assertTrue(never.future.isCancelled());
         expect("logic.number-bound", () -> engine(new CountingAdapter(null)).execute(graph(Collections.singletonList(
                 node("math.node", "arithmetic", Arrays.asList(LogicModel.Binding.constant(TypedValue.ofNumber(1_000_000_000_000D)), LogicModel.Binding.constant(TypedValue.ofNumber(2))), NUMBER, null, null, "multiply", null)),
                 Collections.singletonList(new LogicModel.Output("math.result", "math.node")))));
