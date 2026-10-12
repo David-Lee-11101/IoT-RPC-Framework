@@ -21,8 +21,10 @@ public final class TinyRpcTransportAdapter implements TransportAdapter, Closeabl
     private final LocalEndpointCatalog endpoints;
     private final RpcLimits limits;
     private final TelemetryListener telemetry;
-    private final Map<String, TinyRpcClient> clients = new ConcurrentHashMap<>();
+    private final Map<String, ClientSession> clients = new ConcurrentHashMap<>();
     private final AtomicLong sequence = new AtomicLong();
+    private volatile boolean closed;
+    private final String tracePrefix = "trace.logic." + java.util.UUID.randomUUID() + ".";
 
     public TinyRpcTransportAdapter(LocalEndpointCatalog endpoints, RpcLimits limits, TelemetryListener telemetry) {
         if (endpoints == null) throw new IllegalArgumentException("endpoint catalog is required");
@@ -38,13 +40,13 @@ public final class TinyRpcTransportAdapter implements TransportAdapter, Closeabl
         if (deadlineEpochMs <= System.currentTimeMillis()) return failed(new java.util.concurrent.TimeoutException("Invocation deadline expired"));
         LocalEndpointCatalog.Endpoint endpoint = endpoints.resolve(service.getCatalogId());
         if (endpoint == null) return failed(new IllegalStateException("No local endpoint for catalogId"));
-        final TinyRpcClient client;
+        final ClientSession client;
         try { client = client(service.getCatalogId(), endpoint); }
         catch (Exception connection) { return failed(connection); }
         long id = sequence.incrementAndGet();
-        RpcRequest request = new RpcRequest("trace.logic." + id, "session.logic.001", requestId,
+        RpcRequest request = new RpcRequest(tracePrefix + id, client.sessionId, requestId,
                 service.getServiceId(), operation, TypedValueJson.writeList(arguments), deadlineEpochMs);
-        CompletableFuture<RpcResult> rpc = client.invoke(request);
+        CompletableFuture<RpcResult> rpc = client.transport.invoke(request);
         CompletableFuture<TypedValue> result = new CompletableFuture<>();
         rpc.whenComplete((response, failure) -> {
             if (failure != null) { result.completeExceptionally(failure); return; }
@@ -58,15 +60,24 @@ public final class TinyRpcTransportAdapter implements TransportAdapter, Closeabl
         return result;
     }
 
-    private synchronized TinyRpcClient client(String catalogId, LocalEndpointCatalog.Endpoint endpoint) throws InterruptedException {
-        TinyRpcClient existing = clients.get(catalogId); if (existing != null) return existing;
-        TinyRpcClient created = TinyRpcClient.connect(endpoint.host, endpoint.port, limits, telemetry);
+    private synchronized ClientSession client(String catalogId, LocalEndpointCatalog.Endpoint endpoint) throws java.io.IOException, InterruptedException {
+        if (closed) throw new java.nio.channels.ClosedChannelException();
+        ClientSession existing = clients.get(catalogId); if (existing != null) return existing;
+        ClientSession created = new ClientSession(TinyRpcClient.connect(endpoint.host, endpoint.port, limits, telemetry));
         clients.put(catalogId, created); return created;
     }
 
     @Override public synchronized void close() {
-        for (TinyRpcClient client : clients.values()) client.close();
+        if (closed) return;
+        closed = true;
+        for (ClientSession client : clients.values()) client.transport.close();
         clients.clear();
+    }
+
+    private static final class ClientSession {
+        private final TinyRpcClient transport;
+        private final String sessionId = "session.logic." + java.util.UUID.randomUUID();
+        private ClientSession(TinyRpcClient transport) { this.transport = transport; }
     }
 
     private static <T> CompletableFuture<T> failed(Throwable failure) {

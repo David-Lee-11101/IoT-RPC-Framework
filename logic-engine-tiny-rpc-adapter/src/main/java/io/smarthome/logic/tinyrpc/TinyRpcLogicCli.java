@@ -1,6 +1,21 @@
 package io.smarthome.logic.tinyrpc;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONArray;
+import io.smarthome.logic.LocalServiceCatalog;
+import io.smarthome.logic.LogicEngine;
+import io.smarthome.logic.LogicExecutionResult;
+import io.smarthome.logic.LogicModel;
+import io.smarthome.tinyrpc.telemetry.TransportObservation;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import io.smarthome.logic.TypedValue;
 import io.smarthome.logic.TypedValueJson;
 import io.smarthome.tinyrpc.core.RpcLimits;
@@ -15,13 +30,16 @@ import java.util.concurrent.TimeUnit;
 public final class TinyRpcLogicCli {
     private TinyRpcLogicCli() { }
     public static void main(String[] args) throws Exception {
+        if (args.length == 10 && "invoke-graph".equals(args[0]) && "--descriptor-file".equals(args[6]) && "--trace-file".equals(args[8])) {
+            runGraph(args[1], Integer.parseInt(args[2]), args[3], args[4], args[5], Paths.get(args[7]), Paths.get(args[9])); return;
+        }
         if (args.length == 5 && "provider".equals(args[0])) {
             runProvider(Integer.parseInt(args[1]), args[2], args[3], TypedValueJson.read(args[4])); return;
         }
         if (args.length == 6 && "invoke".equals(args[0])) {
             runInvoke(args[1], Integer.parseInt(args[2]), args[3], args[4], args[5]); return;
         }
-        throw new IllegalArgumentException("Usage: provider <port|0> <serviceId> <operation> <typedValueJson> | invoke <host> <port> <serviceId> <operation> <typedArgumentsJson>");
+        throw new IllegalArgumentException("Usage: invoke-graph <host> <port> <serviceId> <operation> <typedArgumentsJson> --descriptor-file <path> --trace-file <new-path> | provider <port|0> <serviceId> <operation> <typedValueJson> | invoke <host> <port> <serviceId> <operation> <typedArgumentsJson>");
     }
 
     private static void runProvider(int port, String serviceId, String operation, TypedValue result) throws Exception {
@@ -46,6 +64,58 @@ public final class TinyRpcLogicCli {
             else { output.put("errorCode", result.getErrorCode()); output.put("errorMessage", result.getErrorMessage()); }
             System.out.println(output.toJSONString());
         }
+    }
+
+    static JSONObject invokeGraph(String host, int port, String serviceId, String operation, String argumentsJson,
+                                  LogicModel.ServiceDescriptor descriptor, List<TransportObservation> observations) throws Exception {
+        if (!serviceId.equals(descriptor.getServiceId())) throw new IllegalArgumentException("Descriptor service differs from invocation");
+        LogicModel.OperationDescriptor signature = descriptor.operation(operation);
+        if (signature == null) throw new IllegalArgumentException("Operation is not registered");
+        List<LogicModel.Binding> bindings = new ArrayList<>();
+        for (TypedValue argument : TypedValueJson.readList(argumentsJson)) bindings.add(LogicModel.Binding.constant(argument));
+        LogicModel.Node call = new LogicModel.Node("invoke.service", "service-call", bindings, signature.getReturns(), serviceId, operation, null, null);
+        LogicModel.Definition definition = new LogicModel.Definition("graph.cli.invoke", Collections.singletonList(call),
+                Collections.singletonList(new LogicModel.Output("invoke.result", "invoke.service")), 4000, 3000);
+        try (TinyRpcTransportAdapter adapter = new TinyRpcTransportAdapter(new LocalEndpointCatalog()
+                .register(descriptor.getCatalogId(), host, port), RpcLimits.defaults(), observations::add)) {
+            LogicEngine engine = new LogicEngine(new LocalServiceCatalog().register(descriptor), Collections.singletonList(adapter));
+            LogicExecutionResult result = engine.execute(definition);
+            JSONObject output = new JSONObject(true); output.put("event", "invocation-result"); output.put("status", "success");
+            output.put("graphId", result.getGraphId()); output.put("requestId", observations.get(0).getRequestId());
+            output.put("value", JSONValue.parse(TypedValueJson.write(result.getOutputs().get("invoke.result"))));
+            return output;
+        }
+    }
+
+    private static void runGraph(String host, int port, String serviceId, String operation, String argumentsJson,
+                                 Path descriptorFile, Path traceFile) throws Exception {
+        if (Files.size(descriptorFile) > 1048576) throw new IllegalArgumentException("Descriptor exceeds size limit");
+        LogicModel.ServiceDescriptor descriptor = ServiceDescriptorJson.read(new String(Files.readAllBytes(descriptorFile), StandardCharsets.UTF_8));
+        List<TransportObservation> observations = new CopyOnWriteArrayList<>();
+        JSONObject output = invokeGraph(host, port, serviceId, operation, argumentsJson, descriptor, observations);
+        Files.write(traceFile, trace(observations).toJSONString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE_NEW);
+        System.out.println(output.toJSONString());
+    }
+
+    static JSONObject trace(List<TransportObservation> observations) {
+        if (observations.size() != 2) throw new IllegalStateException("Expected one complete RPC exchange");
+        TransportObservation first = observations.get(0), second = observations.get(1);
+        if (!first.getTraceId().equals(second.getTraceId()) || !first.getSessionId().equals(second.getSessionId())
+                || !first.getRequestId().equals(second.getRequestId()) || !"client-to-server".equals(first.getDirection())
+                || !"server-to-client".equals(second.getDirection()) || first.getMonotonicOffsetNanos() < 0
+                || second.getMonotonicOffsetNanos() < first.getMonotonicOffsetNanos())
+            throw new IllegalStateException("Invalid same-session RPC observations");
+        JSONObject trace = new JSONObject(true); trace.put("schemaVersion", "1.0.2"); trace.put("traceId", first.getTraceId());
+        trace.put("sourceKind", "instrumented-rpc"); trace.put("modelInputVersion", "model.input.v1");
+        JSONArray frames = new JSONArray();
+        for (TransportObservation observation : observations) {
+            JSONObject frame = new JSONObject(true); frame.put("schemaVersion", "1.0.2"); frame.put("traceId", observation.getTraceId());
+            frame.put("sessionId", observation.getSessionId()); frame.put("requestId", observation.getRequestId());
+            frame.put("direction", observation.getDirection()); frame.put("encodedFrameLength", observation.getEncodedFrameLength());
+            frame.put("monotonicOffsetNanos", observation.getMonotonicOffsetNanos()); frame.put("transport", observation.getTransport());
+            frame.put("protocolVersion", observation.getProtocolVersion()); frames.add(frame);
+        }
+        trace.put("observations", frames); return trace;
     }
 
     private static final class JSONValue {

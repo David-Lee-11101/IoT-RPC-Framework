@@ -51,7 +51,10 @@ public final class LogicModel {
             this.schemaVersion = "1.0.1"; this.serviceId = serviceId; this.version = version; this.catalogId = catalogId;
             this.transportKind = transportKind; this.protocolVersion = protocolVersion; this.operations = immutable(operations);
             requireIdentifier(serviceId, "serviceId"); requireIdentifier(catalogId, "catalogId");
-            requireIdentifier(version, "version"); requireIdentifier(protocolVersion, "protocolVersion");
+            if (version == null || !(version.matches("[0-9]+\\.[0-9]+\\.[0-9]+") || version.matches(IDENTIFIER)))
+                throw new IllegalArgumentException("Invalid service version");
+            if (protocolVersion == null || protocolVersion.isEmpty() || protocolVersion.length() > 32)
+                throw new IllegalArgumentException("Invalid protocol version");
             if (!("tiny-rpc-netty".equals(transportKind) || "legacy-typed-netty".equals(transportKind)))
                 throw new IllegalArgumentException("Unsupported transport kind");
             java.util.HashSet<String> operationNames = new java.util.HashSet<>();

@@ -38,7 +38,7 @@ Preflight rejects duplicate or missing nodes, cycles, unknown services and opera
 
 ## Frozen integration contract
 
-The engine consumes Smart Home Hub catalog version `1.0.1` at exact commit `ff569fdb97a7ad1f2a33665bd3eaceb1bcd28075`. The frozen `contracts/INTEGRATION_API.md` SHA-256 is `a6b41f12ea80d2ea4872a34fd7c8b638ad6d4be19e14695ad0bd9dcb99a4365e`; machine-readable provenance is stored in [`integration/contracts-hub.json`](integration/contracts-hub.json).
+The engine was developed against Smart Home Hub catalog version `1.0.1` at exact commit `ff569fdb97a7ad1f2a33665bd3eaceb1bcd28075`. The frozen `contracts/INTEGRATION_API.md` SHA-256 is `a6b41f12ea80d2ea4872a34fd7c8b638ad6d4be19e14695ad0bd9dcb99a4365e`; machine-readable provenance is stored in [`integration/contracts-hub.json`](integration/contracts-hub.json).
 
 Typed records follow the Hub contract. `select-field` accepts exactly one node-output record, requires a declared field/signature match during preflight, and reports `logic.missing-field` or `logic.field-type-mismatch` at runtime rather than returning a default.
 
@@ -76,7 +76,10 @@ TinyRpcTransportAdapter adapter = new TinyRpcTransportAdapter(endpoints, RpcLimi
 ```text
 provider <port|0> <serviceId> <operation> <typedValueJson>
 invoke <host> <port> <serviceId> <operation> <typedArgumentsJson>
+invoke-graph <host> <port> <serviceId> <operation> <typedArgumentsJson> --descriptor-file <path> --trace-file <new-path>
 ```
+
+`invoke-graph` validates a frozen Hub `ServiceDescriptor`, constructs a typed one-call DAG, and executes the real Logic Engine through TinyRPC. It writes a new payload-free `TrafficTrace` 1.0.2 file containing both observed frames on one session clock before emitting the result. The caller must profile that trace and persist a scheduling decision before invoking a separate action graph. Direct `invoke` provides an independent state read; it does not establish graph execution. Missing traces, signature mismatches, and unknown operations fail explicitly.
 
 ## Preserved protocol boundary
 

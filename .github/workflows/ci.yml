@@ -19,3 +19,26 @@ jobs:
           cache: maven
       - name: Test
         run: mvn --batch-mode --no-transfer-progress test
+  tiny-rpc-integration:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: ['8', '21']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: logic
+      - uses: actions/checkout@v4
+        with:
+          repository: David-Lee-11101/Handwritten-Netty-RPC
+          ref: 83422781de7b51c9fedfb18041a8204c5f3e6473
+          path: communication
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - name: Install pinned current transport
+        run: mvn --batch-mode --no-transfer-progress -f communication/pom.xml -pl tiny-rpc-netty -am install
+      - name: Verify typed engine and real TinyRPC graph bridge
+        run: mvn --batch-mode --no-transfer-progress -f logic/pom.xml -DtinyRpcAdapter -pl logic-engine-tiny-rpc-adapter -am test

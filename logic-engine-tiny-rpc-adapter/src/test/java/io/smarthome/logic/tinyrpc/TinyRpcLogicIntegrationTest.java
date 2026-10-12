@@ -21,6 +21,25 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TinyRpcLogicIntegrationTest {
+    @Test public void closedAdapterCannotReopenOwnedConnection() throws Exception {
+        java.util.concurrent.atomic.AtomicInteger calls = new java.util.concurrent.atomic.AtomicInteger();
+        TinyRpcServer.Builder builder = TinyRpcServer.builder();
+        TinyRpcTypedProvider.register(builder, "sensor.service", "read.state", arguments -> {
+            calls.incrementAndGet(); return sensor(23.5, "comfort");
+        });
+        try (TinyRpcServer server = builder.build().bind("127.0.0.1", 0)) {
+            TinyRpcTransportAdapter adapter = new TinyRpcTransportAdapter(
+                    new LocalEndpointCatalog().register("local.catalog", "127.0.0.1", server.port()), RpcLimits.defaults(), null);
+            adapter.close();
+            try {
+                adapter.invoke(service(), "read.state", Collections.emptyList(), System.currentTimeMillis() + 1000, "request.closed.001").join();
+                throw new AssertionError("Expected closed adapter rejection");
+            } catch (java.util.concurrent.CompletionException expected) {
+                assertTrue(expected.getCause() instanceof java.nio.channels.ClosedChannelException);
+            } finally { adapter.close(); }
+            assertEquals(0, calls.get());
+        }
+    }
     @Test public void executesTypedDagAcrossRealTinyRpcLoopback() throws Exception {
         RpcLimits limits = new RpcLimits(64 * 1024, 16, 16, 16);
         TinyRpcServer.Builder builder = TinyRpcServer.builder().limits(limits);

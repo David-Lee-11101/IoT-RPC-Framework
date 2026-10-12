@@ -15,6 +15,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class LogicEngineTest {
+    @Test public void acceptsFrozenHubVersionAndProtocolLabels() {
+        LogicModel.ServiceDescriptor descriptor = new LogicModel.ServiceDescriptor("sensor.service", "1.0.0", "local.catalog",
+                "tiny-rpc-netty", "tiny-rpc/1", Collections.emptyList());
+        assertEquals("1.0.0", descriptor.getVersion());
+        assertEquals("tiny-rpc/1", descriptor.getProtocolVersion());
+    }
     private static final LogicModel.TypeSignature NUMBER = new LogicModel.TypeSignature(TypedValue.Type.NUMBER);
     private static final LogicModel.TypeSignature BOOLEAN = new LogicModel.TypeSignature(TypedValue.Type.BOOLEAN);
     private static final LogicModel.TypeSignature STRING = new LogicModel.TypeSignature(TypedValue.Type.STRING);
