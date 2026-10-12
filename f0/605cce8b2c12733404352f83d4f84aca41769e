@@ -1,0 +1,69 @@
+pom.xml
+  s_7011714e525495::t_b47fcb8d1cb3cf 11-12
+assets/hero.svg
+  s_7011714e525495::t_560b152b0db9e6 2,4,6
+RIGHTS.md
+  s_7011714e525495::t_560b152b0db9e6 1-7
+rpc-common-protocol/src/main/java/protocol/Header.java
+  s_7011714e525495::t_2fee5c4d802e28 10,12,19-23
+README.md
+  s_7011714e525495::t_560b152b0db9e6 1,3,5,7-11,14-23,26,30-37,39,41,43,45,47,50-53,55,58,60,62-65,67-70,72,74-76,79-81,83,85,87,89
+rpc-common-protocol/src/main/java/codec/ProtocolDecoder.java
+  s_7011714e525495::t_d45963f282cc2c 22,24,26,34-35,37,39,42,44,47,49,64,69,73,82
+rpc-common-protocol/src/main/java/codec/ProtocolEncoder.java
+  s_7011714e525495::t_4523880e1ae0a2 13,15,17,25,27-30,32,34
+rpc-common-protocol/src/main/java/constants/MessageConstant.java
+  s_7011714e525495::t_bbc9173db7fa5b 4,6
+rpc-common-protocol/src/main/java/entry/NettyClient.java
+  s_7011714e525495::t_7e83110c41f6c7 29
+rpc-common-protocol/src/main/java/entry/NettyServer.java
+  s_7011714e525495::t_d32830ba33e600 13-14,22-24,31,34
+rpc-common-protocol/src/main/java/handler/RpcClientHandler.java
+  s_7011714e525495::t_c09f5a1771743b 15-16
+rpc-common-protocol/src/main/java/handler/RpcClientInitializer.java
+  s_7011714e525495::t_06b0b422ece9b6 15,17-18
+rpc-common-protocol/src/main/java/handler/RpcServerHandler.java
+  s_7011714e525495::t_e2f851a0457ed1 18,21,26,29
+rpc-common-protocol/src/main/java/protocol/ProtocolFuture.java
+  s_7011714e525495::t_972286914a9757 8
+rpc-common-protocol/src/main/java/protocol/ProtocolRequest.java
+  s_7011714e525495::t_e7060733a05b97 11
+rpc-common-protocol/src/main/java/spring/annotation/RemoteServiceReference.java
+  s_7011714e525495::t_e8b6e2c9ae2a8d 11-12
+rpc-common-protocol/src/main/java/spring/reference/ProtocolClientProperties.java
+  s_7011714e525495::t_5cc7d0f65a405e 8
+rpc-common-protocol/src/main/java/spring/reference/ProtocolInvokerProxy.java
+  s_7011714e525495::t_24727ba4cbf5f8 41,44-45
+rpc-common-protocol/src/main/java/spring/reference/SpringReferenceBean.java
+  s_7011714e525495::t_636b07d7d88c16 25
+rpc-common-protocol/src/main/java/spring/reference/SpringReferencePostProcessor.java
+  s_7011714e525495::t_5d1ab8d21d42d6 36,51-52,56,61,69,73,75,78,81-82,88
+rpc-common-protocol/src/main/java/spring/service/Mediator.java
+  s_7011714e525495::t_b62656c856e920 18,29
+rpc-common-protocol/src/main/java/spring/service/ProviderAutoConfiguration.java
+  s_7011714e525495::t_e7b9f0bf5563e3 18
+rpc-common-protocol/src/main/java/spring/service/SpringProviderBean.java
+  s_7011714e525495::t_7466d9631c41e0 19,24,28,30,35,43,46-47,50,62
+rpc-common-registry/src/main/java/serviceregistry/IRegistryService.java
+  s_7011714e525495::t_30886e9661159a 6,13,20
+rpc-common-registry/src/main/java/zookeeper/ZookeeperRegistryService.java
+  s_7011714e525495::t_507cf5515f339b 24-25,46,58,83
+rpc-service-provider/src/main/java/service/userServiceImpl.java
+  s_7011714e525495::t_13379e45e9b66e 10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "f0605cce8b2c12733404352f83d4f84aca41769e",
+  "prompts": {},
+  "sessions": {
+    "s_7011714e525495": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a12529-718f-7053-849a-2fa10f2720ee",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "David Lee <109534658+David-Lee-11101@users.noreply.github.com>"
+    }
+  }
+}
