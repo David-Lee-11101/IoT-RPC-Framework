@@ -30,8 +30,8 @@ jobs:
           path: logic
       - uses: actions/checkout@v4
         with:
-          repository: David-Lee-11101/Handwritten-Netty-RPC
-          ref: 83ffe6d77bf4cd249db863f4df1e9597938b59ad
+          repository: David-Lee-11101/Smart-Home-Communication
+          ref: a125ff4bebb692c7d043a69307ae223525b97cd7
           path: communication
       - uses: actions/setup-java@v4
         with:
