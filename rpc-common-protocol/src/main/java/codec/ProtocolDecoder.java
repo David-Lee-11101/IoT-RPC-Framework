@@ -19,11 +19,11 @@ import serialization.SerializationManager;
 import java.util.List;
 
 
-/*  netty通信报文每个报文统一header格式如下：
+/* Every legacy Netty frame uses this fixed header:
     +----------------------------------------------+
-    | 魔数 2byte | 序列化算法 1byte | 请求类型 1byte  |
+    | magic 2 bytes | serializer 1 byte | message type 1 byte |
     +----------------------------------------------+
-    | 消息 ID 8byte     |      数据长度 4byte       |
+    | request ID 8 bytes | payload length 4 bytes |
     +----------------------------------------------+
 */
 @Slf4j
@@ -31,22 +31,22 @@ public class ProtocolDecoder extends ByteToMessageDecoder {
     public static final int MAX_FRAME_LENGTH = 1024 * 1024;
 
     @Override
-    //处理器上下文，入站数据，解码后消息对象的列表，整个列表将被传给管道中的下一个处理器
-    //将字节转化为了更高级的消息对象
+    // Decode inbound bytes into messages for the next pipeline handler.
+    // Convert bytes into a typed protocol message.
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        log.info("==================== 入站消息解码处理 =======================");
+        log.debug("Decoding inbound RPC frame");
         if (in.readableBytes() < MessageConstant.HEAD_TOTAL_LEN) {
-            //消息长度不够，不需要解析
+            // Wait for the complete fixed header.
             return;
         }
-        //标记数组读取前的开头位置，防止后续数组读取失败可返回
+        // Mark the reader index so a fragmented payload can be retried.
         in.markReaderIndex();
-        //使用魔数确定目标数据包
+        // Validate the protocol identity.
         short magic = in.readShort();
         if (magic != MessageConstant.MAGIC) {
-            throw new IllegalArgumentException("魔数格式不匹配，报文错误," + magic);
+            throw new IllegalArgumentException("Invalid protocol magic: " + magic);
         }
-        //按照请求头格式读取
+        // Read fields in fixed header order.
         byte serialType = in.readByte();
         if (serialType != SerializationType.JSON_Serialization.code()) {
             throw new CorruptedFrameException("Network frames support JSON serialization only: " + serialType);
@@ -61,16 +61,16 @@ public class ProtocolDecoder extends ByteToMessageDecoder {
         if (dataLength > maxPayloadLength) {
             throw new TooLongFrameException("Payload length " + dataLength + " exceeds " + maxPayloadLength);
         }
-        //可读区域的字节数小于实际数据长度，说明此时接收到的数据是半包，还没有完整到达，没有足够的数据，因此等待后重新读取
+        // Reset and wait when the payload is fragmented.
         if (in.readableBytes() < dataLength) {
             in.resetReaderIndex();
             return;
         }
-        //读取消息内容
+        // Read the complete payload.
         byte[] content = new byte[dataLength];
         in.readBytes(content);
 
-        //构建header头信息
+        // Reconstruct the validated header.
         Header header = new Header(magic, serialType, reqType, requestId, dataLength);
         ISerializer serializer = SerializationManager.getSerializer(serialType);
         MessageType type = MessageType.findByCode(reqType);
@@ -79,7 +79,7 @@ public class ProtocolDecoder extends ByteToMessageDecoder {
         }
         switch (type) {
             case REQUEST:
-                //在这里反序列化，将接收到的字节数组转为规定好的RRequest格式的类对象
+                // Deserialize only into the message type selected by the validated header.
                 ProtocolRequest request = serializer.deserialize(content, ProtocolRequest.class);
                 ProtocolConstruction<ProtocolRequest> reqProtocol = new ProtocolConstruction<>();
                 reqProtocol.setHeader(header);

@@ -12,8 +12,8 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<ProtocolConstr
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ProtocolConstruction<ProtocolResponse> msg) throws Exception {
-        log.info("接收到了Service Provider方返回的请求数据");
-        //这是client一开始往过发时候打上的request标记
+        log.info("Received an RPC response from the provider");
+        // Correlate the reply with the request identifier assigned by the client.
         long requestId=msg.getHeader().getRequestId();
         if (!RequestHolder.complete(requestId, msg.getContent())) {
             log.warn("Ignoring response for unknown request ID {}", requestId);

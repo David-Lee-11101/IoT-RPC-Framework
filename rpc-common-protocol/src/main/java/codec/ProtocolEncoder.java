@@ -10,11 +10,11 @@ import serialization.ISerializer;
 import serialization.SerializationManager;
 
 
-/*  netty通信报文每个报文统一header格式如下：
+/* Every legacy Netty frame uses this fixed header:
     +----------------------------------------------+
-    | 魔数 2byte | 序列化算法 1byte | 请求类型 1byte  |
+    | magic 2 bytes | serializer 1 byte | message type 1 byte |
     +----------------------------------------------+
-    | 消息 ID 8byte     |      数据长度 4byte       |
+    | request ID 8 bytes | payload length 4 bytes |
     +----------------------------------------------+
 */
 @Slf4j
@@ -22,16 +22,16 @@ public class ProtocolEncoder extends MessageToByteEncoder<ProtocolConstruction<O
 
     @Override
     protected void encode(ChannelHandlerContext ctx, ProtocolConstruction<Object> msg, ByteBuf out) throws Exception {
-        log.info("==================== 出站消息编码处理 =======================");
+        log.debug("Encoding outbound RPC frame");
         Header header=msg.getHeader();
-        out.writeShort(header.getMagic()); //写入魔数
-        out.writeByte(header.getSerialType()); //写入序列化类型
-        out.writeByte(header.getReqType());//写入请求类型
-        out.writeLong(header.getRequestId()); //写入请求id
+        out.writeShort(header.getMagic()); // Protocol magic.
+        out.writeByte(header.getSerialType()); // Serializer identifier.
+        out.writeByte(header.getReqType()); // Message type.
+        out.writeLong(header.getRequestId()); // Correlation identifier.
         ISerializer serializer= SerializationManager.getSerializer(header.getSerialType());
-        byte[] data=serializer.serialize(msg.getContent()); //序列化
+        byte[] data=serializer.serialize(msg.getContent()); // Serialize payload.
         header.setLength(data.length);
-        out.writeInt(data.length); //写入消息长度
+        out.writeInt(data.length); // Payload length.
         out.writeBytes(data);
     }
 }

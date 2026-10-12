@@ -19,3 +19,26 @@ jobs:
           cache: maven
       - name: Test
         run: mvn --batch-mode --no-transfer-progress test
+  tiny-rpc-integration:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: ['8', '21']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: logic
+      - uses: actions/checkout@v4
+        with:
+          repository: David-Lee-11101/Smart-Home-Communication
+          ref: a125ff4bebb692c7d043a69307ae223525b97cd7
+          path: communication
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - name: Install pinned current transport
+        run: mvn --batch-mode --no-transfer-progress -f communication/pom.xml -pl tiny-rpc-netty -am install
+      - name: Verify typed engine and real TinyRPC graph bridge
+        run: mvn --batch-mode --no-transfer-progress -f logic/pom.xml -DtinyRpcAdapter -pl logic-engine-tiny-rpc-adapter -am test

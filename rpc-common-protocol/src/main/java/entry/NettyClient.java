@@ -26,7 +26,7 @@ public class NettyClient implements Closeable {
     private final Bootstrap bootstrap;
     private final EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
     public NettyClient(){
-        log.info("开始初始化 Netty Client");
+        log.info("Initializing Netty client");
         bootstrap=new Bootstrap();
         bootstrap.group(eventLoopGroup)
                 .channel(NioSocketChannel.class)

@@ -38,11 +38,11 @@ public class ProtocolInvokerProxy implements InvocationHandler {
         this.requestTimeoutMillis = requestTimeoutMillis;
     }
 
-    //可以使用监听器或者CompletableFuture+addListener的方法，对结果的处理以thenApply的方式采取异步回调
+    // The preserved proxy exposes a blocking boundary over an asynchronous response future.
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        log.info("开始远程调用Service Provider的函数");
-        // 组装参数
+        log.info("Invoking remote service operation");
+        // Assemble the request arguments.
         ProtocolConstruction<ProtocolRequest> protocol = new ProtocolConstruction<>();
         long requestId = RequestHolder.nextRequestId();
         Header header = new Header(MessageConstant.MAGIC, SerializationType.JSON_Serialization.code(), MessageType.REQUEST.code(), requestId, 0);

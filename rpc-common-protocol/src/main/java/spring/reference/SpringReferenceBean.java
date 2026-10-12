@@ -22,7 +22,7 @@ public class SpringReferenceBean implements FactoryBean<Object> {
         return object;
     }
 
-    //开始从这里进入，构建netty client并向zookeeper获取provider地址，随后一系列操作，按照地址找provider端建立连接...
+    // Build the Netty client, discover a provider, and connect to its resolved address.
     public void init(){
         IRegistryService registryService= RegistryFactory.createRegistryService(this.registryAddress, RegistryType.findByCode(this.registryType));
         this.object= Proxy.newProxyInstance(this.interfaceClass.getClassLoader(),

@@ -7,7 +7,7 @@ import spring.annotation.RemoteServiceReference;
 import java.util.HashMap;
 import java.util.Map;
 
-@RemoteServiceReference //对于带有这种注解的，则直接进行服务的注册与发布
+@RemoteServiceReference // Registers and publishes the annotated service.
 @Slf4j
 public class userServiceImpl implements IUserService {
     @Override
