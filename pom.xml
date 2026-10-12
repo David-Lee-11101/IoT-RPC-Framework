@@ -9,6 +9,8 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
+        <module>logic-engine-core</module>
+        <module>logic-engine-legacy-adapter</module>
         <module>rpc-common-interface</module>
         <module>rpc-common-protocol</module>
         <module>rpc-common-registry</module>
@@ -27,6 +29,23 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <netty.version>4.1.67.Final</netty.version>
+        <fastjson.version>1.2.72</fastjson.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency><groupId>io.netty</groupId><artifactId>netty-all</artifactId><version>${netty.version}</version></dependency>
+            <dependency><groupId>com.alibaba</groupId><artifactId>fastjson</artifactId><version>${fastjson.version}</version></dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>tiny-rpc-adapter</id>
+            <activation><property><name>tinyRpcAdapter</name></property></activation>
+            <modules><module>logic-engine-tiny-rpc-adapter</module></modules>
+        </profile>
+    </profiles>
 
 </project>
