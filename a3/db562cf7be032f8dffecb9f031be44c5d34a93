@@ -1,0 +1,37 @@
+README.md
+  s_7011714e525495::t_37ddb4c8d74e1f 49-50
+logic-engine-core/pom.xml
+  s_7011714e525495::t_1bccf3e253dec1 4
+logic-engine-legacy-adapter/pom.xml
+  s_7011714e525495::t_18fba66006aa1d 4,7
+logic-engine-tiny-rpc-adapter/pom.xml
+  s_7011714e525495::t_a744137f013818 4,7
+pom.xml
+  s_7011714e525495::t_62ce282e34aeed 7
+rpc-common-interface/pom.xml
+  s_7011714e525495::t_40d7f1f50d2be9 7
+rpc-common-protocol/pom.xml
+  s_7011714e525495::t_148b17abc4bb74 7,38
+rpc-common-registry/pom.xml
+  s_7011714e525495::t_b1d11c4371e312 7
+rpc-service-consumer/pom.xml
+  s_7011714e525495::t_529f5d381bc2ef 7,42,47
+rpc-service-provider/pom.xml
+  s_7011714e525495::t_53270ce429e760 7,28,41,46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "a3db562cf7be032f8dffecb9f031be44c5d34a93",
+  "prompts": {},
+  "sessions": {
+    "s_7011714e525495": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a12529-718f-7053-849a-2fa10f2720ee",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "David Lee <109534658+David-Lee-11101@users.noreply.github.com>"
+    }
+  }
+}
