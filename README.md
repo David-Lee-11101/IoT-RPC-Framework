@@ -1,95 +1,89 @@
-![SmartService-Discovery-RPC architecture card](assets/hero.svg)
+![SmartHome Logic Engine architecture](assets/hero.svg)
 
-# SmartService Discovery RPC
+# SmartHome Logic Engine
 
-SmartService Discovery RPC is a learning-oriented Java RPC implementation that combines Netty transport, dynamic proxies, Spring-based service exposure, and ZooKeeper service discovery. It demonstrates the complete path from an annotated consumer call to provider-side reflection and a correlated response.
+### Typed service orchestration for smart-home edge computing
 
-## Architecture
+SmartHome Logic Engine turns smart-home service calls into a validated, deterministic computation graph. A graph can invoke an allowlisted service, select fields from typed records, compare values, compose boolean conditions, and perform bounded arithmetic. The engine validates the complete DAG before any network side effect.
+
+This repository also preserves the earlier registry-backed Netty RPC implementation. The new engine consumes it through an explicit `legacy-typed-netty` gateway and uses the separate Smart Home Communication repository through a real `tiny-rpc-netty` adapter. The two wire protocols remain intentionally distinct.
+
+## Execution model
 
 ```mermaid
-sequenceDiagram
-    participant Consumer as Consumer proxy
-    participant Registry as ZooKeeper
-    participant Client as Netty client
-    participant Provider as Provider handler
-    Consumer->>Registry: discover(service interface)
-    Registry-->>Consumer: provider address
-    Consumer->>Client: register request ID, then connect
-    Client->>Provider: framed request
-    Provider->>Provider: resolve bean and invoke method
-    Provider-->>Client: correlated response
-    Client-->>Consumer: complete promise
+flowchart LR
+    D[LogicDefinition 1.0.1] --> P[Preflight validation]
+    C[Local Service Catalog] --> P
+    P -->|valid typed DAG| T[Deterministic topological executor]
+    P -->|invalid| E[Structured LogicFailure]
+    T --> R[TinyRPC adapter]
+    R --> S[Smart-home services]
+    S --> V[Typed record]
+    V --> F[Field selection and bounded operators]
+    F --> O[Named graph outputs]
 ```
 
-The proxy API is synchronous: the caller waits for a response or a five-second request deadline. Network I/O remains asynchronous inside Netty. Connections are bounded by a three-second connect timeout, frames are limited to 1 MiB, and request correlations are removed on response, write/connect failure, timeout, cancellation, or channel close. Network frames accept JSON serialization only; Java object serialization and unknown serializer identifiers are rejected before payload deserialization. Fastjson auto-type support is disabled in safe mode.
+Preflight rejects duplicate or missing nodes, cycles, unknown services and operations, argument-count and signature mismatches, invalid record fields, unsafe node kinds, and incompatible operators before dispatch. Record values are limited to 32 fields and four nesting levels. The runtime applies graph and node deadlines, finite-number bounds, structured missing-field errors, and exact output checks without `eval`, shell execution, arbitrary class loading, implicit coercion, fallback invocation, or silent retry.
 
 ## Modules
 
-- `rpc-common-interface` — shared service contracts.
-- `rpc-common-registry` — ZooKeeper registration, discovery, and load balancing.
-- `rpc-common-protocol` — framing, serialization, correlation, transport, and Spring integration.
-- `rpc-service-provider` — loopback provider example.
-- `rpc-service-consumer` — loopback consumer example.
+| Module | Responsibility |
+| --- | --- |
+| `logic-engine-core` | typed values, contract models, local service catalog, DAG validation, and deterministic execution |
+| `logic-engine-tiny-rpc-adapter` | real Smart Home Communication client/provider bridge and CLI; enabled with `-DtinyRpcAdapter` |
+| `logic-engine-legacy-adapter` | explicit allowlisted gateway to the preserved 16-byte typed Netty protocol |
+| `rpc-common-protocol` | preserved 16-byte framing, correlation, Netty transport, and Spring bridge |
+| `rpc-common-registry` | preserved ZooKeeper registration and discovery adapter |
+| `rpc-service-provider`, `rpc-service-consumer` | legacy loopback examples |
 
-## Run the loopback demo
+## Frozen integration contract
 
-Prerequisites: JDK 8, Maven 3.6+, and ZooKeeper listening on `127.0.0.1:2181`.
+The engine consumes Smart Home Hub catalog version `1.0.1` at exact commit `ff569fdb97a7ad1f2a33665bd3eaceb1bcd28075`. The frozen `contracts/INTEGRATION_API.md` SHA-256 is `a6b41f12ea80d2ea4872a34fd7c8b638ad6d4be19e14695ad0bd9dcb99a4365e`; machine-readable provenance is stored in [`integration/contracts-hub.json`](integration/contracts-hub.json).
+
+Typed records follow the Hub contract. `select-field` accepts exactly one node-output record, requires a declared field/signature match during preflight, and reports `logic.missing-field` or `logic.field-type-mismatch` at runtime rather than returning a default.
+
+## Build and verify
+
+JDK 8 and Maven 3.6+ are required. Install Smart Home Communication locally first when testing the TinyRPC adapter.
 
 ```bash
-mvn --batch-mode --no-transfer-progress test
+# In Smart Home Communication
 mvn --batch-mode --no-transfer-progress -DskipTests install
-mvn -pl rpc-service-provider spring-boot:run
-```
 
-In a second terminal:
-
-```bash
-mvn -pl rpc-service-consumer spring-boot:run
-curl 'http://127.0.0.1:8080/getUser?id=1001'
-curl 'http://127.0.0.1:8080/getUsers'
-```
-
-Both sample applications use loopback addresses. Change the properties files explicitly when testing across machines.
-
-## Protocol
-
-Each frame contains a 16-byte header: magic number, serializer, message type, request ID, and payload length. The decoder waits for fragmented payloads and rejects non-JSON serializers, negative lengths, unsupported message types, and oversized frames before deserialization or allocation.
-
-## Test
-
-```bash
+# In this repository
 mvn --batch-mode --no-transfer-progress test
+mvn --batch-mode --no-transfer-progress -DtinyRpcAdapter test
 ```
 
-The test suite also starts a disposable in-process ZooKeeper server and a real Netty provider on an ephemeral loopback port. It verifies rapid and concurrent correlated calls, exact `RuleSpec` JSON-string transport, request timeout, provider disconnect, pending-map cleanup, and client thread shutdown. No external registry or Docker service is used by the integration test.
+The core and adapter tests cover deterministic graph ordering, cycles and references, service/operation/signature preflight, unknown operators and unsafe kinds, constant divide-by-zero, bounded math, node timeout, record depth/field limits, strict typed JSON, runtime missing/mismatched fields, legacy gateway isolation, and a real TinyRPC loopback returning a typed record with same-session frame observations.
 
-Run only this verified smoke matrix with:
+## TinyRPC provider API
 
-```bash
-mvn -pl rpc-common-protocol -am \
-  -Dtest=integration.RpcLoopbackIntegrationTest \
-  -Dsurefire.failIfNoSpecifiedTests=false test
+```java
+TinyRpcServer.Builder builder = TinyRpcServer.builder();
+TinyRpcTypedProvider.register(builder, "sensor.service", "read.state", arguments -> typedRecord);
+TinyRpcServer server = builder.build().bind("127.0.0.1", 0);
+
+LocalEndpointCatalog endpoints = new LocalEndpointCatalog()
+    .register("local.catalog", "127.0.0.1", server.port());
+TinyRpcTransportAdapter adapter = new TinyRpcTransportAdapter(endpoints, RpcLimits.defaults(), telemetry);
 ```
 
-## RuleSpec suite integration
+`io.smarthome.logic.tinyrpc.TinyRpcLogicCli` provides machine-readable `provider-ready` and `invocation-result` JSON for local cold-source integration. The provider command binds only to loopback and accepts an OS-assigned port:
 
-The [`integration/`](integration/) directory contains the shared RuleSpec v0 JSON Schema, immutable fixture, explicit adapter capability matrix, and offline compatibility runner for the scheduler, analyzer, composer, and this RPC transport. The generated proof records exact commands and repository states. It makes no general interoperability or production claim.
-
-```bash
-python3 -m unittest discover -s integration/tests -v
-python3 integration/compatibility.py
+```text
+provider <port|0> <serviceId> <operation> <typedValueJson>
+invoke <host> <port> <serviceId> <operation> <typedArgumentsJson>
 ```
 
-See the [integration contract and publication procedure](integration/README.md) before enabling its pending CI template.
+## Preserved protocol boundary
 
-## Limitations
+The legacy protocol retains its 16-byte header, JSON-only network serializer, request correlation, timeout/disconnect cleanup, and disposable real ZooKeeper/Netty loopback test. Spring and ZooKeeper stay outside the new engine core. The older `integration/compatibility.py` manifest references superseded repository revisions and is retained only as historical evidence; the Hub exact-commit cold-source runner is the publication authority.
 
-- ZooKeeper is the only registry implementation included.
-- The public proxy API blocks the calling thread.
-- JSON is the only accepted network serialization format, and there is no schema negotiation.
-- Authentication, encryption, retries, circuit breaking, and production observability are outside the current scope.
-- No performance or production-readiness claim is made.
+## Research provenance
 
-## License
+The system is presented as independent research. The typed graph engine and TinyRPC bridge are current engineering; older RPC modules remain visible to show the protocol evolution and are not described as the new engine implementation.
 
-No license has been declared for this repository. Copyright remains with the repository owner unless a license is added explicitly.
+## Rights
+
+See [`RIGHTS.md`](RIGHTS.md). No open-source reuse license is granted for the owner's original contribution.

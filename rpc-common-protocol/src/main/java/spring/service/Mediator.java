@@ -15,7 +15,7 @@ public class Mediator {
     private Mediator(){
     }
 
-    //这里使用了双重锁定检查，用于在创建单例模式时防止被重复创建
+    // Use double-checked locking for the singleton mediator.
     public static Mediator getInstance(){
         if(instance==null){
             synchronized (Mediator.class){
@@ -26,7 +26,7 @@ public class Mediator {
         }
         return instance;
     }
-    //mediator是给server端反射调用函数使用的
+    // The mediator stores explicitly registered provider methods.
     public Object processor(ProtocolRequest rpcRequest){
         String key=rpcRequest.getClassName()+"."+rpcRequest.getMethodName();
         BeanMethod beanMethod=beanMethodMap.get(key);

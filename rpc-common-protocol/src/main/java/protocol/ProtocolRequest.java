@@ -8,7 +8,7 @@ import java.io.Serializable;
 public class ProtocolRequest implements Serializable {
     private String className;
     private String methodName;
-    //使用数组，因为不止一个参数
+    // Preserve ordered multi-argument calls.
     private Object[] params;
     private Class<?>[] parameterTypes;
 }

@@ -15,7 +15,7 @@ public class ProviderAutoConfiguration {
 
     @Bean
     public SpringProviderBean rpcProviderBean(ProtocolServerProperties rpcServerProperties) throws UnknownHostException {
-        //添加注册中心
+        // Configure the registry adapter.
         IRegistryService registryService= RegistryFactory.createRegistryService(rpcServerProperties.getRegistryAddress(), RegistryType.findByCode(rpcServerProperties.getRegisterType()));
         return new SpringProviderBean(
                 rpcServerProperties.getServiceAddress(),

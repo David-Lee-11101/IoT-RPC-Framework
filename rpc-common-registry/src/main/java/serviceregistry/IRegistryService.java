@@ -3,21 +3,21 @@ package serviceregistry;
 public interface IRegistryService {
 
     /**
-     * 注册服务
+     * Registers a service.
      * @param serviceInfo
      * @throws Exception
      */
     void register(ServiceInfo serviceInfo) throws Exception;
 
     /**
-     * 取消注册
+     * Unregisters a service.
      * @param serviceInfo
      * @throws Exception
      */
     void unRegister(ServiceInfo serviceInfo) throws Exception;
 
     /**
-     * 动态发现服务
+     * Discovers a service dynamically.
      * @param serviceName
      * @return
      * @throws Exception

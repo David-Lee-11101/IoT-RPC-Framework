@@ -10,8 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class NettyServer{
-    private String serverAddress; //地址
-    private int serverPort; //端口
+    private String serverAddress; // Bind address.
+    private int serverPort; // Bind port.
 
     public NettyServer(String serverAddress, int serverPort) {
         this.serverAddress = serverAddress;
@@ -19,19 +19,19 @@ public class NettyServer{
     }
 
     public void startNettyServer() throws Exception {
-        log.info("Service Provider Netty客户端开始启动");
-        EventLoopGroup bossGroup=new NioEventLoopGroup();  //处理连接请求
-        EventLoopGroup workGroup=new NioEventLoopGroup();  //处理连接上的io操作
+        log.info("Starting Netty service provider");
+        EventLoopGroup bossGroup=new NioEventLoopGroup();  // Accept connections.
+        EventLoopGroup workGroup=new NioEventLoopGroup();  // Process channel I/O.
         try {
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(bossGroup, workGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new RpcServerInitializer());
             ChannelFuture channelFuture = bootstrap.bind(this.serverAddress, this.serverPort).sync();
-            log.info("Service Provider Netty客户端启动 Port:{}", this.serverPort);
+            log.info("Netty service provider started on port {}", this.serverPort);
             channelFuture.channel().closeFuture().sync();
         }catch (Exception e){
-            log.error("Service Provider Netty客户端启动错误",e);
+            log.error("Netty service provider startup failed", e);
         }finally {
             workGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();

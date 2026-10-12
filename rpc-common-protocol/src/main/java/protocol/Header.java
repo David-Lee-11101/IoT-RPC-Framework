@@ -7,18 +7,18 @@ import java.io.Serializable;
 
  /*
     +----------------------------------------------+
-    | 魔数 2byte | 序列化算法 1byte | 请求类型 1byte  |
+    | magic 2 bytes | serializer 1 byte | message type 1 byte |
     +----------------------------------------------+
-    | 消息 ID 8byte     |      数据长度 4byte       |
+    | request ID 8 bytes | payload length 4 bytes |
     +----------------------------------------------+
     */
 
 @AllArgsConstructor
 @Data
 public class Header implements Serializable {
-    private short magic; //魔数-用来验证报文的身份（2个字节）
-    private byte serialType; //序列化类型（1个字节）
-    private byte reqType; //操作类型（1个字节）
-    private long requestId; //请求id（8个字节）
-    private int length; //数据长度（4个字节）
+    private short magic; // Two-byte protocol identity.
+    private byte serialType; // One-byte serializer identifier.
+    private byte reqType; // One-byte message type.
+    private long requestId; // Eight-byte correlation identifier.
+    private int length; // Four-byte payload length.
 }

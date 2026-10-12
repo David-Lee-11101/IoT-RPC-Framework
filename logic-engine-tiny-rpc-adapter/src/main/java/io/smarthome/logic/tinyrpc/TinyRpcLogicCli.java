@@ -9,7 +9,6 @@ import io.smarthome.tinyrpc.core.RpcResult;
 import io.smarthome.tinyrpc.netty.TinyRpcClient;
 import io.smarthome.tinyrpc.netty.TinyRpcServer;
 
-import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 

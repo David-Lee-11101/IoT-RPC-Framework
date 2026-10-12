@@ -8,6 +8,8 @@
     <artifactId>IoT-RPC-Framework</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
+    <name>SmartHome Logic Engine</name>
+    <description>Typed service orchestration for smart-home edge computing</description>
     <modules>
         <module>logic-engine-core</module>
         <module>logic-engine-legacy-adapter</module>

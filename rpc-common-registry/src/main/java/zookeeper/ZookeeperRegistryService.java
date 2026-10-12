@@ -21,8 +21,8 @@ public class ZookeeperRegistryService implements IRegistryService, AutoCloseable
 
     private static final String REGISTRY_PATH="/registry";
     private static final int CONNECTION_TIMEOUT_SECONDS = 5;
-    //Curator中提供的服务注册与发现的组件封装，它对此抽象出了ServiceInstance、
-    // ServiceProvider、ServiceDiscovery三个接口，通过它我们可以很轻易的实现Service Discovery
+    // Curator exposes service registration and discovery through ServiceInstance,
+    // ServiceProvider, and ServiceDiscovery abstractions.
     private final ServiceDiscovery<ServiceInfo> serviceDiscovery;
     private final CuratorFramework client;
 
@@ -43,7 +43,7 @@ public class ZookeeperRegistryService implements IRegistryService, AutoCloseable
             throw interrupted;
         }
         JsonInstanceSerializer<ServiceInfo> serializer=new JsonInstanceSerializer<>(ServiceInfo.class);
-        //random负载均衡的选择一台zookeeper服务器连接
+        // Select one discovered provider using random load balancing.
         this.serviceDiscovery= ServiceDiscoveryBuilder.builder(ServiceInfo.class)
                 .client(client)
                 .serializer(serializer)
@@ -55,7 +55,7 @@ public class ZookeeperRegistryService implements IRegistryService, AutoCloseable
 
     @Override
     public void register(ServiceInfo serviceInfo) throws Exception {
-        log.info("开始注册的服务接口为，{}",serviceInfo);
+        log.info("Registering service {}", serviceInfo);
         ServiceInstance<ServiceInfo> serviceInstance=ServiceInstance
                 .<ServiceInfo>builder().name(serviceInfo.getServiceName())
                 .address(serviceInfo.getServiceAddress())
@@ -80,7 +80,7 @@ public class ZookeeperRegistryService implements IRegistryService, AutoCloseable
     public ServiceInfo discovery(String serviceName) throws Exception {
         Collection<ServiceInstance<ServiceInfo>> serviceInstances= serviceDiscovery
                 .queryForInstances(serviceName);
-        //通过负载均衡返回某个具体实例
+        // Return one provider chosen by the load balancer.
         ServiceInstance<ServiceInfo> serviceInstance=loadBalance.select(new java.util.ArrayList<>(serviceInstances));
         if(serviceInstance!=null){
             return serviceInstance.getPayload();

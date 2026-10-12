@@ -33,7 +33,7 @@ public class SpringReferencePostProcessor implements ApplicationContextAware, Be
         this.nettyClient = nettyClient;
     }
 
-    //保存发布的引用bean信息
+    // Store published reference bean definitions.
     private final Map<String, BeanDefinition> rpcRefBeanDefinitions=new ConcurrentHashMap<>();
 
     @Override
@@ -48,17 +48,17 @@ public class SpringReferencePostProcessor implements ApplicationContextAware, Be
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         for (String beanDefinitionname:beanFactory.getBeanDefinitionNames()){
-            //遍历bean定义，然后获取到加载的bean，遍历这些bean中的字段，是否携带RemoteCallReference注解
-            //如果有，则需要构建一个动态代理实现
+            // Inspect loaded bean fields for RemoteCallReference.
+            // Build a dynamic proxy for each annotated reference.
             BeanDefinition beanDefinition=beanFactory.getBeanDefinition(beanDefinitionname);
             String beanClassName=beanDefinition.getBeanClassName();
             if(beanClassName!=null){
-                //利用类加载机制和类加载器获取相关的信息，即堆内存上的java.lang.class对象信息
+                // Resolve the declared reference interface.
                 Class<?> clazz= ClassUtils.resolveClassName(beanClassName,this.classLoader);
                 ReflectionUtils.doWithFields(clazz,this::parseRpcReference);
             }
         }
-        //将RemoteCallReference注解的bean，构建一个动态代理对象
+        // Replace an annotated reference with its dynamic proxy.
         BeanDefinitionRegistry registry=(BeanDefinitionRegistry)beanFactory;
         this.rpcRefBeanDefinitions.forEach((beanName,beanDefinition)->{
             if(context.containsBean(beanName)){
@@ -66,26 +66,26 @@ public class SpringReferencePostProcessor implements ApplicationContextAware, Be
                 return;
             }
             registry.registerBeanDefinition(beanName,beanDefinition);
-            log.info("注册了bean方法 {} 成功.",beanName);
+            log.info("Registered bean method {}", beanName);
         });
     }
     private void parseRpcReference(Field field){
-        //这段话就是判断这个bean class是否有RemoteCallReference注解
+        // Check whether the bean class declares RemoteCallReference.
         RemoteCallReference remoteCallReference= AnnotationUtils.getAnnotation(field,RemoteCallReference.class);
-        //说明这个bean存在这个注解
+        // The annotation marks this bean as an RPC reference.
         if(remoteCallReference!=null) {
             BeanDefinitionBuilder builder=BeanDefinitionBuilder.genericBeanDefinition(SpringReferenceBean.class);
-            //找到注解后会调用init方法。这里的INIT_METHOD_NAME参数表示为调用init函数
+            // Invoke the reference bean initialization method after registration.
             builder.setInitMethodName(MessageConstant.INIT_METHOD_NAME);
             builder.addPropertyValue("interfaceClass",field.getType());
-            //这里对应去拿的也是按照interface接口去拿的。
-            log.info("Spring 测试：interfaceClass为 {}",field.getType());
+            // Resolve the proxy by its interface type.
+            log.info("Creating Spring RPC proxy for interface {}", field.getType());
             builder.addPropertyValue("registryType",clientProperties.getRegistryType());
             builder.addPropertyValue("registryAddress",clientProperties.getRegistryAddress());
             builder.addPropertyValue("nettyClient", nettyClient);
             BeanDefinition beanDefinition=builder.getBeanDefinition();
             rpcRefBeanDefinitions.put(field.getName(),beanDefinition);
-            log.info("Spring 对 Client请求方法的Bean对象生成成功");
+            log.info("Created Spring RPC client reference");
         }
     }
 }

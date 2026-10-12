@@ -15,18 +15,18 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<ProtocolConstr
     protected void channelRead0(ChannelHandlerContext ctx, ProtocolConstruction<ProtocolRequest> msg) throws Exception {
         ProtocolConstruction resProtocol=new ProtocolConstruction<>();
         Header header=msg.getHeader();
-        //复用并更改header里面的请求/回复信息
+        // Reuse the correlation header and switch the message type to response.
         header.setReqType(MessageType.RESPONSE.code());
 
-        //这里通过java的反射机制实现了结果
+        // Invoke the explicitly registered provider method.
         Object result= Mediator.getInstance().processor(msg.getContent());
         resProtocol.setHeader(header);
         ProtocolResponse response=new ProtocolResponse();
         response.setData(result);
-        response.setMsg("服务器端成功调用了客户端请求的方法");
+        response.setMsg("Provider completed the requested operation");
         resProtocol.setContent(response);
 
-        //在最后一个handler将返回的消息发送回去，开始掉头出栈
+        // Write the response through the outbound pipeline.
         ctx.writeAndFlush(resProtocol);
     }
     @Override
