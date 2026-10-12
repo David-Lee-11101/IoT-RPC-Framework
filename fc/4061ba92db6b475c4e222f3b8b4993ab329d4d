@@ -1,0 +1,19 @@
+docs/CLEANUP_PLAN.md
+  s_7011714e525495::t_a0c5abfacf2ed8 1-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "fc4061ba92db6b475c4e222f3b8b4993ab329d4d",
+  "prompts": {},
+  "sessions": {
+    "s_7011714e525495": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a12529-718f-7053-849a-2fa10f2720ee",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "恺撒 <weihaodong@xiaohongshu.com>"
+    }
+  }
+}
