@@ -1,0 +1,21 @@
+logic-engine-core/src/main/java/io/smarthome/logic/LogicEngine.java
+  s_7011714e525495::t_4463f74d119e2e 16,71-75,150-154,229
+logic-engine-core/src/test/java/io/smarthome/logic/LogicEngineTest.java
+  s_7011714e525495::t_995ffcaa2a7c81 108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "cc3945d367fef422d70822e3e2637b6df9948fd8",
+  "prompts": {},
+  "sessions": {
+    "s_7011714e525495": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a12529-718f-7053-849a-2fa10f2720ee",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "David Lee <109534658+David-Lee-11101@users.noreply.github.com>"
+    }
+  }
+}
