@@ -25,6 +25,11 @@ public class TinyRpcGraphCliTest {
         try (TinyRpcServer server = builder.build().bind("127.0.0.1", 0)) {
             JSONObject result = TinyRpcLogicCli.invokeGraph("127.0.0.1", server.port(), "switch.service", "readEnabled", "[]", descriptor, frames);
             assertEquals("success", result.getString("status"));
+            JSONObject executed = result.getJSONObject("logicDefinition");
+            assertEquals(result.get("graphId"), executed.get("graphId"));
+            assertEquals("readEnabled", executed.getJSONArray("nodes").getJSONObject(0).get("operation"));
+            assertEquals("invoke.service", executed.getJSONArray("outputs").getJSONObject(0).get("nodeId"));
+            assertEquals(3000, executed.getJSONObject("timeoutPolicy").getIntValue("nodeTimeoutMs"));
             assertEquals(Boolean.TRUE, result.getJSONObject("value").get("value"));
             JSONObject trace = TinyRpcLogicCli.trace(frames);
             assertEquals("1.0.2", trace.getString("schemaVersion"));

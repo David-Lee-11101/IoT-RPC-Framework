@@ -79,7 +79,7 @@ invoke <host> <port> <serviceId> <operation> <typedArgumentsJson>
 invoke-graph <host> <port> <serviceId> <operation> <typedArgumentsJson> --descriptor-file <path> --trace-file <new-path>
 ```
 
-`invoke-graph` validates a frozen Hub `ServiceDescriptor`, constructs a typed one-call DAG, and executes the real Logic Engine through TinyRPC. It writes a new payload-free `TrafficTrace` 1.0.2 file containing both observed frames on one session clock before emitting the result. The caller must profile that trace and persist a scheduling decision before invoking a separate action graph. Direct `invoke` provides an independent state read; it does not establish graph execution. Missing traces, signature mismatches, and unknown operations fail explicitly.
+`invoke-graph` validates a frozen Hub `ServiceDescriptor`, constructs a typed one-call DAG, and executes the real Logic Engine through TinyRPC. It writes a new payload-free `TrafficTrace` 1.0.2 file containing both observed frames on one session clock before emitting the result. The result includes `logicDefinition` serialized from the exact validated graph object, allowing Management to persist and read back the graph that produced the recorded invocation. The caller must profile that trace and persist a scheduling decision before invoking a separate action graph. Direct `invoke` provides an independent state read; it does not establish graph execution. Missing traces, signature mismatches, and unknown operations fail explicitly.
 
 ## Preserved protocol boundary
 

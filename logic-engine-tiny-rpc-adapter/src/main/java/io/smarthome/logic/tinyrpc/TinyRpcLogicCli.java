@@ -82,9 +82,45 @@ public final class TinyRpcLogicCli {
             LogicExecutionResult result = engine.execute(definition);
             JSONObject output = new JSONObject(true); output.put("event", "invocation-result"); output.put("status", "success");
             output.put("graphId", result.getGraphId()); output.put("requestId", observations.get(0).getRequestId());
+            output.put("logicDefinition", graphJson(definition));
             output.put("value", JSONValue.parse(TypedValueJson.write(result.getOutputs().get("invoke.result"))));
             return output;
         }
+    }
+
+    private static JSONObject graphJson(LogicModel.Definition definition) {
+        JSONObject graph = new JSONObject(true); graph.put("schemaVersion", definition.getSchemaVersion());
+        graph.put("graphId", definition.getGraphId()); JSONArray nodes = new JSONArray();
+        for (LogicModel.Node node : definition.getNodes()) {
+            JSONObject value = new JSONObject(true); value.put("nodeId", node.getNodeId()); value.put("kind", node.getKind());
+            value.put("serviceId", node.getServiceId()); value.put("operation", node.getOperation());
+            value.put("resultType", node.getResult().getType().name().toLowerCase(java.util.Locale.ROOT));
+            if (node.getResult().getType() == TypedValue.Type.RECORD) value.put("resultFields", fieldJson(node.getResult().getFields()));
+            JSONArray inputs = new JSONArray();
+            for (LogicModel.Binding binding : node.getInputs()) {
+                JSONObject input = new JSONObject(true); input.put("bindingKind", "constant");
+                input.put("constant", JSONValue.parse(TypedValueJson.write(binding.getConstant()))); inputs.add(input);
+            }
+            value.put("inputs", inputs); nodes.add(value);
+        }
+        graph.put("nodes", nodes); JSONArray outputs = new JSONArray();
+        for (LogicModel.Output output : definition.getOutputs()) {
+            JSONObject value = new JSONObject(true); value.put("name", output.getName()); value.put("nodeId", output.getNodeId()); outputs.add(value);
+        }
+        graph.put("outputs", outputs); JSONObject timeout = new JSONObject(true);
+        timeout.put("graphTimeoutMs", definition.getGraphTimeoutMs()); timeout.put("nodeTimeoutMs", definition.getNodeTimeoutMs());
+        graph.put("timeoutPolicy", timeout); return graph;
+    }
+
+    private static JSONArray fieldJson(List<LogicModel.FieldDescriptor> fields) {
+        JSONArray values = new JSONArray();
+        for (LogicModel.FieldDescriptor field : fields) {
+            JSONObject value = new JSONObject(true); value.put("name", field.getName());
+            value.put("type", field.getType().name().toLowerCase(java.util.Locale.ROOT));
+            if (field.getType() == TypedValue.Type.RECORD) value.put("fields", fieldJson(field.getFields()));
+            values.add(value);
+        }
+        return values;
     }
 
     private static void runGraph(String host, int port, String serviceId, String operation, String argumentsJson,
